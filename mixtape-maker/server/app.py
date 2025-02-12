@@ -3,8 +3,9 @@ from server.config import app, db
 from sqlalchemy.exc import IntegrityError
 from server.models import User, Song, Mixtape, MixtapeItem
 
-# POST /register: Register a new user. (Tested using PostMan - 200)
+# USER ROUTES
 
+# POST /register: Register a new user. (Tested using PostMan - 200)
 @app.post("/register")
 def register_user():
     new_user = request.json
@@ -21,7 +22,6 @@ def register_user():
         return jsonify({"error": str(exception)})
 
 # POST /login: Log in. (Created test user in DB and tested via Postman, 200 OK)
-
 @app.post("/login")
 def user_login():
     user_entry = request.json
@@ -42,8 +42,14 @@ def get_user(user_id):
         return jsonify({"error": "User not found."})
     return jsonify(user.to_dict()), 200
 
-# GET/songs: Get all songs (Tested via postman, 200 OK)
+#
+# 
+# 
+# 
+# 
+# SONG ROUTES
 
+# GET/songs: Get all songs (Tested via postman, 200 OK)
 @app.get("/songs")
 def get_songs():
     songs = Song.query.all()
@@ -54,7 +60,6 @@ def get_songs():
     return jsonify({"songs": song_list}), 200
 
 #POST/songs: Create a new song (tested via postman, 200 ok)
-
 @app.post("/songs")
 def create_new_song():
     new_song = request.json
@@ -69,7 +74,6 @@ def create_new_song():
         return jsonify({"error": str(exception)}), 500
     
 #PATCH/songs/id: Update a song (tested in Postman, 200 OK)
-
 @app.patch("/songs/<int:song_id>")
 def update_song(song_id):
     updated_song = request.json
@@ -94,7 +98,6 @@ def update_song(song_id):
 
 
 #DELETE/songs.id: Delete a song (Tested via Postman, 200 OK)
-
 @app.delete("/songs/<int:song_id>")
 def delete_song(song_id):
     song = Song.query.filter_by(id=song_id).first()
@@ -106,8 +109,35 @@ def delete_song(song_id):
         return jsonify({"message": "Song deleted successfully!"})
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
+    
+#GET/songs/search: Search for songs by attribute? (Tested via postman, 200 OK)
+@app.get("/songs/search")
+def search_songs():
+    name = request.args.get("name")
+    artist = request.args.get("artist")
+    album = request.args.get("album")
+    query = Song.query
 
-#MIXTAPES
+    if name:
+        query = query.filter(Song.name.ilike(f"%{name}%"))
+    if artist:
+        query = query.filter(Song.artist.ilike(f"%{artist}%"))
+    if album:
+        query = query.filter(Song.album.ilike(f"%{album}%"))
+
+    songs = query.all()
+    if not songs:
+        return jsonify({"error": "Sorry, no songs found matching these specifications."})
+    song_data = [{"id": song.id, "name": song.name, "artist": song.artist, "album": song.album, "duration": song.duraton} for song in songs ]
+    return jsonify({"songs": song_data}), 200
+    
+# 
+# 
+# 
+#
+#
+# MIXTAPE ROUTES
+
 # GET /mixtapes: Get all mixtapes
 @app.get("/mixtapes")
 def get_mixtapes():
@@ -142,29 +172,6 @@ def create_mixtape():
         return jsonify(mixtape.to_dict()), 201
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
-    
-#GET/songs/search: Search for songs by attribute? (Tested via postman, 200 OK)
-    
-@app.get("/songs/search")
-def search_songs():
-    name = request.args.get("name")
-    artist = request.args.get("artist")
-    album = request.args.get("album")
-    query = Song.query
-
-    if name:
-        query = query.filter(Song.name.ilike(f"%{name}%"))
-    if artist:
-        query = query.filter(Song.artist.ilike(f"%{artist}%"))
-    if album:
-        query = query.filter(Song.album.ilike(f"%{album}%"))
-
-    songs = query.all()
-    if not songs:
-        return jsonify({"error": "Sorry, no songs found matching these specifications."})
-    song_data = [{"id": song.id, "name": song.name, "artist": song.artist, "album": song.album, "duration": song.duraton} for song in songs ]
-    return jsonify({"songs": song_data}), 200
-
 
 # PATCH /mixtapes/:id: Update a mixtape
 @app.patch("/mixtapes/<int:mixtape_id>")
@@ -200,8 +207,13 @@ def delete_mixtape(mixtape_id):
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
+#
+#
+#
+#
+#
+# MIXTAPEITEMS ROUTES
 
-#MIXTAPEITEMS
 # GET /mixtape-items: Get all mixtape items
 @app.get("/mixtape-items")
 def get_mixtape_items():
