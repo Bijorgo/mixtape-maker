@@ -1,5 +1,5 @@
 //  Form to create or edit mixtapes (title, description).
-function MixtapeForm(){
+export default function MixtapeForm(){
     return(
         <form className="mixtape-form">
             <input
@@ -10,5 +10,3 @@ function MixtapeForm(){
         </form>
     )
 }
-
-export default MixtapeForm;

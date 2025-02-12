@@ -1,4 +1,4 @@
 // Display a specific mixtape (Home page)
-function MixtapeView(){
+export default function MixtapeView(){
     
 }
