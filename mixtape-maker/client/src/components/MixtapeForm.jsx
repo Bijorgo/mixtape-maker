@@ -1,10 +1,73 @@
 //  Form to create or edit mixtapes (title, description).
-export default function MixtapeForm(){
+import { useState } from "react"
+
+export default function MixtapeForm({ addNewMixtape }){
+    // States
+    const [ title, setTitle ] = useState("");
+    const [ description, setDescription ] = useState("");
+    const [ error, setError ] = useState("")
+
+    // Submit handler 
+    function handleSubmit(event){
+        // Prevent redirect
+        event.preventDefault();
+
+        // Form validation
+        if (!title || !description) {
+            setError("Pleases fill out all fields.");
+            return;// Prevents form submit if invalid
+        }
+
+        // If form is valid, clear error
+        setError("")
+
+        // If form is valid, create newMixtape object
+        const newMixtape = {
+            title,
+            description
+        };
+
+        // Send new mixtape to server
+        fetch("http://localhost:5000/mixtapes",{
+            method: "POST",
+            headers: {
+                // Check headers
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newMixtape)
+        })
+
+        .then( r=> r.json())
+        .then( mixtape => {
+            // Add form info to newMixtape object
+            addNewMixtape(mixtape)
+            // Clear fields after submit
+            setTitle("");
+            setDescription("");
+            // Add success message
+        })
+        .catch(error => console.log(error));  
+    };
+
+
     return(
-        <form className="mixtape-form">
+        <form className="mixtape-form" onSubmit={handleSubmit}>
+            <h3>Create a new mixtape</h3>
             <input
                 type="text"
-
+                name="title"
+                placeholder="Title"
+                onChange={ event => setTitle(event.target.value) }
+                value={title}
+                className="input-field"
+            />
+            <input
+                type="text"
+                name="description"
+                placeholder="Description"
+                onChange={ event => setDescription(event.target.value) }
+                value={description}
+                className="input-field"
             />
             <input type="submit" value="save"/>
         </form>
