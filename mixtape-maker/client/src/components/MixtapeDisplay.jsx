@@ -1,7 +1,7 @@
 // Display mixtape preview in Home
 import { Link } from "react-router-dom"
 
-export default function MixtapeItem({ mixtapes }){
+export default function MixtapeDisplay({ mixtapes }){
     return(
         <div>
             <h2>My Mixtapes: </h2>
@@ -11,9 +11,10 @@ export default function MixtapeItem({ mixtapes }){
                         key={mixtape.id}
                         //className=""
                     >
-                        <p>Something to display the mixtape goes here</p>
+                        <h3>{mixtape.title}</h3>
+                        <p>{mixtape.description || "No description available"}</p>
                         <Link
-                        to={`/???/$mixtape.id`}
+                        to={`/mixtapes/${mixtape.id}`}
                         //className=""
                         >
                             View Mixtape Contents
