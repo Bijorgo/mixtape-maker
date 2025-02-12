@@ -1,3 +1,3 @@
-function MixtapeContents(){
+export default function MixtapeContents(){
     // mixtape contents 
 }
