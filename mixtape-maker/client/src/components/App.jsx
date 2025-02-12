@@ -1,6 +1,4 @@
 function App() {
-    // States
-    // Fetching with useEffect (async)
 
 }
 
