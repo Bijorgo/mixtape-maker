@@ -142,6 +142,29 @@ def create_mixtape():
         return jsonify(mixtape.to_dict()), 201
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
+    
+#GET/songs/search: Search for songs by attribute? (Tested via postman, 200 OK)
+    
+@app.get("/songs/search")
+def search_songs():
+    name = request.args.get("name")
+    artist = request.args.get("artist")
+    album = request.args.get("album")
+    query = Song.query
+
+    if name:
+        query = query.filter(Song.name.ilike(f"%{name}%"))
+    if artist:
+        query = query.filter(Song.artist.ilike(f"%{artist}%"))
+    if album:
+        query = query.filter(Song.album.ilike(f"%{album}%"))
+
+    songs = query.all()
+    if not songs:
+        return jsonify({"error": "Sorry, no songs found matching these specifications."})
+    song_data = [{"id": song.id, "name": song.name, "artist": song.artist, "album": song.album, "duration": song.duraton} for song in songs ]
+    return jsonify({"songs": song_data}), 200
+
 
 # PATCH /mixtapes/:id: Update a mixtape
 @app.patch("/mixtapes/<int:mixtape_id>")
