@@ -12,10 +12,10 @@ export default function MixtapeForm({ addNewMixtape }){
         // Prevent redirect
         event.preventDefault();
 
-        // Form validation
-        if (!title || !description) {
-            setError("Pleases fill out all fields.");
-            return;// Prevents form submit if invalid
+        // Form validation: title is required, description is optional
+        if (!title) {
+            setError("Pleases fill out title field.");
+            return;// Prevents form submit if title is missing
         }
 
         // If form is valid, clear error
@@ -24,7 +24,7 @@ export default function MixtapeForm({ addNewMixtape }){
         // If form is valid, create newMixtape object
         const newMixtape = {
             title,
-            description
+            description: description || "" // Default to empty string
         };
 
         // Send new mixtape to server
