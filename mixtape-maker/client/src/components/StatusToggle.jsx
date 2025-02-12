@@ -6,7 +6,7 @@ export default function StatusToggle({ mixtapeItemId, currentStatus }) {
         const newStatus = status === "unlistened" ? "listened" : "unlistened";
         setStatus(newStatus);
         
-        // Update the status in the database or send it to the API (optional)
+        // Update the status in the database or send it to the API
         fetch(`/mixtape-items/${mixtapeItemId}`, {
             method: "PATCH",
             headers: {
