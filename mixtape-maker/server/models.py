@@ -1,4 +1,4 @@
-from server.config import db, SerializerMixin, association_proxy
+from config import db, SerializerMixin, association_proxy
 
 
 class User(db.Model):

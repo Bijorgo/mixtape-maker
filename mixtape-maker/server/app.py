@@ -1,7 +1,11 @@
 from flask import Flask, request, jsonify
-from server.config import app, db
+from config import app, db
 from sqlalchemy.exc import IntegrityError
-from server.models import User, Song, Mixtape, MixtapeItem
+from models import User, Song, Mixtape, MixtapeItem
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
 # USER ROUTES
 
