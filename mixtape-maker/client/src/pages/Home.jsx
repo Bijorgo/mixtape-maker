@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import MixtapeForm from "../components/MixtapeForm"
+import MixtapeItem from "../components/MixtapeItem"
 
 export default function Home(){
     //Landing page where users can view available mixtapes
@@ -19,6 +20,7 @@ export default function Home(){
 
     return(
         <div>
+            <MixtapeItem mixtapes={mixtapes}/>
             <MixtapeForm addNewMixtape={addNewMixtape}/>
         </div>
     )
