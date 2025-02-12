@@ -1,5 +1,5 @@
-from flask import request, jsonify
-from config import app, db
+from flask import Flask, request, jsonify
+from server.config import app, db
 from sqlalchemy.exc import IntegrityError
 from models import User, Song, Mixtape, MixtapeItem
 
