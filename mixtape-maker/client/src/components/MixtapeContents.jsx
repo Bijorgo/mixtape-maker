@@ -5,6 +5,9 @@ export default function MixtapeContents(){
     const [mixtape, setMixtape] = useState(null);
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState("");  // State to store feedback messages
+    const [messageType, setMessageType] = useState("");  // To style success or error messages
+
 
     // Fetch mixtape data and songs when the component mounts
     useEffect(() => {
@@ -43,6 +46,49 @@ export default function MixtapeContents(){
         fetchMixtapeDetails();
     }, [id]);
 
+    const deleteSongFromMixtape = async (mixtapeItemId) => {
+        try {
+            const response = await fetch(`/mixtape-items/${mixtapeItemId}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                setMessage("Song removed from mixtape successfully!");
+                setMessageType("success");
+                setSongs(songs.filter(song => song.mixtapeItemId !== mixtapeItemId));
+            } else {
+                setMessage(data.error || "Failed to remove song.");
+                setMessageType("error");
+            }
+        } catch (error) {
+            setMessage("An error occurred while deleting the song.");
+            setMessageType("error");
+        }
+    };
+
+    const deleteMixtape = async () => {
+        try {
+            const response = await fetch(`/mixtapes/${id}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                setMessage("Mixtape and all songs deleted successfully!");
+                setMessageType("success");
+                navigate("/");  // Redirect to home page
+            } else {
+                setMessage(data.error || "Failed to delete mixtape.");
+                setMessageType("error");
+            }
+        } catch (error) {
+            setMessage("An error occurred while deleting the mixtape.");
+            setMessageType("error");
+        }
+    };
+
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -53,20 +99,32 @@ export default function MixtapeContents(){
 
     return (
         <div>
-        <h1>{mixtape.title}</h1>
-        <p>{mixtape.description}</p>
-        <h3>Songs in this Mixtape:</h3>
-        <ul>
-            {songs.length > 0 ? ( // Check to see if there are songs in the array
-            songs.map((song) => (
-                <li key={song.id}>
-                <strong>{song.name}</strong> by {song.artist} (Album: {song.album})
-                </li>
-            ))
-            ) : ( // If no songs in array: display no songs found
-            <p>No songs found in this mixtape.</p>
+            <h1>{mixtape.title}</h1>
+            <p>{mixtape.description}</p>
+            <button onClick={deleteMixtape}>Delete Mixtape</button>
+
+            {/* Display the feedback message */}
+            {message && (
+                <div className={`message ${messageType}`}>
+                    {message}
+                </div>
             )}
-        </ul>
+
+            <h3>Songs in this Mixtape:</h3>
+            <ul>
+                {songs.length > 0 ? ( // Check to see if there are songs in the array
+                songs.map((song) => (
+                    <li key={song.id}>
+                        <strong>{song.name}</strong> by {song.artist} (Album: {song.album})
+                        <button onClick={() => deleteSongFromMixtape(song.mixtapeItemId)}>
+                            Remove from Mixtape
+                        </button>
+                    </li>
+                ))
+                ) : ( // If no songs in array: display no songs found
+                <p>No songs found in this mixtape.</p>
+                )}
+            </ul>
         </div>
     );
 }
