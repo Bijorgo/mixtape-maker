@@ -1,6 +1,13 @@
 // Display song name, artist, album, and listen status. Include options to mark as "listened" or "unlistened."
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+
+
+
+
 // Links from Home
 export default function MixtapeContents(){
+    const navigate = useNavigate();
     const { id } = useParams(); // Get mixtape ID from URL params
     const [mixtape, setMixtape] = useState(null);
     const [songs, setSongs] = useState([]);
@@ -20,7 +27,7 @@ export default function MixtapeContents(){
             if (mixtapeResponse.ok) {
             setMixtape(mixtapeData);
             // Fetch the songs associated with this mixtape
-            const songsResponse = await fetch(`/mixtape-items?mixtape_id=${id}`);
+            const songsResponse = await fetch(`/mixtape-items/${id}`);
             const songsData = await songsResponse.json();
             
             if (songsResponse.ok) {
@@ -52,11 +59,12 @@ export default function MixtapeContents(){
                 method: 'DELETE',
             });
             const data = await response.json();
-
+    
             if (response.ok) {
                 setMessage("Song removed from mixtape successfully!");
                 setMessageType("success");
-                setSongs(songs.filter(song => song.mixtapeItemId !== mixtapeItemId));
+                // Adjusting here to use the correct field if needed
+                setSongs(songs.filter(song => song.id !== mixtapeItemId));  // Assuming `song.id` corresponds to `mixtapeItemId`
             } else {
                 setMessage(data.error || "Failed to remove song.");
                 setMessageType("error");
@@ -66,6 +74,7 @@ export default function MixtapeContents(){
             setMessageType("error");
         }
     };
+    
 
     const deleteMixtape = async () => {
         try {

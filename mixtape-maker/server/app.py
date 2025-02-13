@@ -1,7 +1,10 @@
-from flask import request, jsonify
+from flask import request, jsonify, session, redirect, url_for
 from config import app, db
 from sqlalchemy.exc import IntegrityError
 from models import User, Song, Mixtape, MixtapeItem
+from flask_cors import CORS
+
+CORS(app, supports_credentials=True)
 
 
 
@@ -23,6 +26,7 @@ def register_user():
         db.session.add(User(username=new_user["username"], password=new_user["password"]))
         db.session.commit()
         return jsonify({"message:": "User created!"}), 201
+    
     except IntegrityError:
         return jsonify({"error": "Username already exists, please try another one."})
     except Exception as exception:
@@ -34,12 +38,18 @@ def user_login():
     user_entry = request.json
     username = user_entry["username"]
     password = user_entry["password"]
+
     if not username or not password:
         return jsonify({"error": "Username and password are required for login."})
     user=User.query.filter_by(username=username).first()
+
     if not user or user.password != password:
         return jsonify({"error": "Inavalid username or password."}), 401
-    return jsonify({"message": "You have successfully logged in!"}), 200
+    
+    # Store user_id in session after log in
+    session["user_id"] = user.id
+
+    return redirect(url_for('get_user_mixtapes', user_id=user.id))
 
 # GET /users/:id : Retrieve a specific user's information. (Tested via Postman, 200 OK)
 @app.get("/users/<int:user_id>")
@@ -48,6 +58,37 @@ def get_user(user_id):
     if not user:
         return jsonify({"error": "User not found."})
     return jsonify(user.to_dict()), 200
+
+@app.get('/current_user')
+def current_user():
+    user_id = session.get('user_id')
+    if user_id:
+        return jsonify({"user_id": user_id}), 200
+    else:
+        return jsonify({"error": "Not logged in"}), 401
+
+@app.get("/users/<int:user_id>/mixtapes")
+def get_user_mixtapes(user_id):
+    # Retrieve user_id from the session
+    logged_in_user_id = session.get("user_id")
+
+    if logged_in_user_id is None:
+        return jsonify({"error": "You must be logged in to view mixtapes."}), 401
+
+    if logged_in_user_id != user_id:
+        return jsonify({"error": "You do not have permission to view this user's mixtapes."}), 403
+
+    # Fetch the mixtapes for the logged-in user
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+    
+    mixtapes = user.mixtapes  # Get all mixtapes associated with the user
+    
+    mixtape_list = [mixtape.to_dict() for mixtape in mixtapes]
+    
+    return jsonify({"mixtapes": mixtape_list}), 200
+
 
 #
 # 
@@ -148,7 +189,12 @@ def search_songs():
 # GET /mixtapes: Get all mixtapes
 @app.get("/mixtapes")
 def get_mixtapes():
-    mixtapes = Mixtape.query.all()
+    user_id = session.get("user_id")  # Get the user ID from the session
+
+    if not user_id:
+        return jsonify({"error": "You must be logged in to view mixtapes."}), 401  # Ensure user is logged in
+
+    mixtapes = Mixtape.query.filter_by(user_id=user_id).all()  # Fetch only the mixtapes associated with the logged-in user
     if not mixtapes:
         return jsonify({"error": "No mixtapes found."}), 404
     mixtape_list = [mixtape.to_dict() for mixtape in mixtapes]
@@ -157,7 +203,10 @@ def get_mixtapes():
 # GET /mixtapes/:id: Retrieve a specific mixtape's information
 @app.get("/mixtapes/<int:mixtape_id>")
 def get_mixtape(mixtape_id):
-    mixtape = Mixtape.query.filter_by(id=mixtape_id).first()
+    user_id = session.get("user_id")  # Get the user_id from session
+    if not user_id:
+        return jsonify({"error": "You must be logged in to view mixtapes."}), 401
+    mixtape = Mixtape.query.filter_by(id=mixtape_id, user_id=user_id).first()  # Ensure mixtape belongs to logged-in user
     if not mixtape:
         return jsonify({"error": "Mixtape not found."}), 404
     return jsonify(mixtape.to_dict()), 200
@@ -165,26 +214,35 @@ def get_mixtape(mixtape_id):
 # POST /mixtapes: Create a new mixtape
 @app.post("/mixtapes")
 def create_mixtape():
-    new_mixtape = request.json
-    if not new_mixtape.get("title") or not new_mixtape.get("user_id"):
+    user_id = session.get("user_id")  # Get user_id from the session 
+    title = request.json.get('title')
+
+    if not user_id:
+        return jsonify({"error": "You must be logged in to create a mixtape."}), 401  # Ensure the user is logged in
+    
+    if not title or not user_id:
         return jsonify({"error": "Title and user_id are required fields."}), 400
+    
+    new_mixtape = Mixtape(
+        title=title,
+        user_id=user_id,  
+        description=request.json.get('description', "")
+    )
+    
     try:
-        mixtape = Mixtape(
-            title=new_mixtape["title"],
-            description=new_mixtape.get("description", ""),
-            user_id=new_mixtape["user_id"]
-        )
-        db.session.add(mixtape)
+        db.session.add(new_mixtape)
         db.session.commit()
-        return jsonify(mixtape.to_dict()), 201
+        return jsonify(new_mixtape.to_dict()), 201
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
 # PATCH /mixtapes/:id: Update a mixtape
 @app.patch("/mixtapes/<int:mixtape_id>")
 def update_mixtape(mixtape_id):
+    user_id = session.get("user_id")
     updated_mixtape = request.json
-    mixtape = Mixtape.query.filter_by(id=mixtape_id).first()
+    mixtape = Mixtape.query.filter_by(id=mixtape_id, user_id=user_id).first()  # Ensure mixtape belongs to logged-in user
+
     if not mixtape:
         return jsonify({"error": "Mixtape not found."}), 404
     
@@ -204,7 +262,9 @@ def update_mixtape(mixtape_id):
 # DELETE /mixtapes/:id: Delete a mixtape
 @app.delete("/mixtapes/<int:mixtape_id>")
 def delete_mixtape(mixtape_id):
-    mixtape = Mixtape.query.filter_by(id=mixtape_id).first()
+    user_id = session.get("user_id")
+    mixtape = Mixtape.query.filter_by(id=mixtape_id, user_id=user_id).first()  # Ensure the logged-in user owns the mixtape
+
     if not mixtape:
         return jsonify({"error": "Mixtape not found."}), 404
     try:
@@ -231,16 +291,30 @@ def get_mixtape_items():
     mixtape_item_list = [mixtape_item.to_dict() for mixtape_item in mixtape_items]
     return jsonify({"mixtape_items": mixtape_item_list}), 200
 
-# POST /mixtape-items: Add a new song to a mixtape
+# POST /mixtape-items: Add a song to a mixtape
 @app.post("/mixtape-items")
 def create_mixtape_item():
+    user_id = session.get("user_id")  # Get user_id from session
+    
+    if not user_id:
+        return jsonify({"error": "You must be logged in to add a song to a mixtape."}), 401
+
     new_item = request.json
-    if not new_item.get("mixtape_id") or not new_item.get("song_id"):
+    mixtape_id = new_item.get("mixtape_id")
+    song_id = new_item.get("song_id")
+    
+    if not mixtape_id or not song_id:
         return jsonify({"error": "Mixtape ID and Song ID are required fields."}), 400
+    
+    mixtape = Mixtape.query.filter_by(id=mixtape_id, user_id=user_id).first()  # Ensure the mixtape belongs to the logged-in user
+    
+    if not mixtape:
+        return jsonify({"error": "Mixtape not found or you do not have permission to add items to it."}), 404
+
     try:
         mixtape_item = MixtapeItem(
-            mixtape_id=new_item["mixtape_id"],
-            song_id=new_item["song_id"],
+            mixtape_id=mixtape_id,
+            song_id=song_id,
             status=new_item.get("status", "unlistened")
         )
         db.session.add(mixtape_item)

@@ -10,6 +10,8 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///music_app.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config['JSON_COMPACT'] = False
+app.config['SECRET_KEY'] = 'your_secret_key_here'
+
 
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
