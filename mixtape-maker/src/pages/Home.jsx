@@ -44,8 +44,6 @@ export default function Home(){
             <MixtapeDisplay mixtapes={mixtapes} />
             <MixtapeContents />
             <MixtapeForm addNewMixtape={addNewMixtape}/>
-            <SongForm />
-            <SongList />
         </div>
     )
 }
