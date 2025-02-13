@@ -221,6 +221,16 @@ def get_mixtape_items_for_mixtape(mixtape_id):
         return jsonify({"mixtape_items": []})  # Return empty list instead of an error
     return jsonify({"mixtape_items": [item.to_dict() for item in mixtape_items]}), 200
 
+@app.get("/mixtape-items")
+def get_mixtape_items():
+    mixtape_id = request.args.get("mixtape_id")
+    if not mixtape_id:
+        return jsonify({"error": "Missing mixtape_id"}), 400
+
+    items = MixtapeItem.query.filter_by(mixtape_id=mixtape_id).all()
+    return jsonify([item.to_dict() for item in items])
+
+
 
 @app.post("/mixtape-items")
 def create_mixtape_item():
