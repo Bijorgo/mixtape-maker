@@ -1,75 +1,78 @@
-//  Form to create or edit mixtapes (title, description).
-import { useState } from "react"
+// MixtapeForm.jsx
+import { useState } from "react";
 
-export default function MixtapeForm({ addNewMixtape }){
+export default function MixtapeForm({ addNewMixtape }) {
     // States
-    const [ title, setTitle ] = useState("");
-    const [ description, setDescription ] = useState("");
-    const [ error, setError ] = useState("")
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [error, setError] = useState("");
 
     // Submit handler 
-    function handleSubmit(event){
-        // Prevent redirect
+    function handleSubmit(event) {
+        // Prevent default form submit behavior
         event.preventDefault();
 
         // Form validation: title is required, description is optional
         if (!title) {
-            setError("Pleases fill out title field.");
-            return;// Prevents form submit if title is missing
+            setError("Please fill out the title field.");
+            return; // Prevents form submission if title is missing
         }
 
-        // If form is valid, clear error
-        setError("")
+        // If form is valid, clear the error
+        setError("");
 
-        // If form is valid, create newMixtape object
+        // Create the newMixtape object without user ID
         const newMixtape = {
             title,
-            description: description || "" // Default to empty string
+            description: description || "", // Default to empty string if no description
         };
 
-        // Send new mixtape to server
-        fetch("http://localhost:5000/mixtapes",{
+        // Send new mixtape to the server
+        fetch("http://localhost:5000/mixtapes", {
             method: "POST",
             headers: {
-                // Check headers
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(newMixtape)
+            body: JSON.stringify(newMixtape),
         })
+            .then((r) => r.json())
+            .then((mixtape) => {
+                // Add new mixtape to the list of mixtapes
+                addNewMixtape(mixtape);
 
-        .then( r=> r.json())
-        .then( mixtape => {
-            // Add form info to newMixtape object
-            addNewMixtape(mixtape)
-            // Clear fields after submit
-            setTitle("");
-            setDescription("");
-            // Add success message
-        })
-        .catch(error => console.log(error));  
-    };
+                // Clear the fields after submitting
+                setTitle("");
+                setDescription("");
+            })
+            .catch((error) => {
+                console.log(error);
+                setError("Failed to create mixtape. Please try again.");
+            });
+    }
 
-
-    return(
-        <form className="mixtape-form" onSubmit={handleSubmit}>
-            <h3>Create a new mixtape</h3>
-            <input
-                type="text"
-                name="title"
-                placeholder="Title"
-                onChange={ event => setTitle(event.target.value) }
-                value={title}
-                className="input-field"
-            />
-            <input
-                type="text"
-                name="description"
-                placeholder="Description"
-                onChange={ event => setDescription(event.target.value) }
-                value={description}
-                className="input-field"
-            />
-            <input type="submit" value="save"/>
-        </form>
-    )
+    return (
+        <div>
+            <h1>Form Loaded</h1>
+            <form onSubmit={handleSubmit}>
+                <h3>Create a new mixtape</h3>
+                {/* Display error message if validation fails */}
+                {error && <div className="error-message">{error}</div>}
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Title"
+                    onChange={(event) => setTitle(event.target.value)}
+                    value={title}
+                />
+                <input
+                    type="text"
+                    name="description"
+                    placeholder="Description"
+                    onChange={(event) => setDescription(event.target.value)}
+                    value={description}
+                />
+                <input type="submit" value="Save" />
+            </form>
+        </div>
+    );
 }

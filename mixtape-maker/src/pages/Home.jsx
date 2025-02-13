@@ -1,49 +1,58 @@
-import { useState, useEffect } from "react"
-import MixtapeForm from "../components/MixtapeForm"
-import MixtapeDisplay from "../components/MixtapeDisplay"
+import { useState, useEffect } from "react";
+import MixtapeForm from "../components/MixtapeForm";
+import MixtapeDisplay from "../components/MixtapeDisplay";
 import MixtapeContents from "../components/MixtapeContents";
-import SongForm from "../components/SongForm";
-import SongList from "../components/SongList";
+import { Link } from "react-router";
 
-export default function Home(){
-    //Landing page where users can view available mixtapes
-    // States
-    const [ mixtapes, setMixtapes ] = useState([])
-    const [userId, setUserId] = useState(null); // Store the logged-in user's ID
+export default function Home() {
+    // State to store mixtapes
+    const [mixtapes, setMixtapes] = useState([]);
+    // const [userId, setUserId] = useState(null); // Store the logged-in user's ID
 
-    // Fetch the logged-in user's ID from the backend
-  useEffect(() => {
-    fetch("http://localhost:5000/current_user")  // Fetch the user_id from the session
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.user_id) {
-          setUserId(data.user_id);
-        } else {
-          alert("You must be logged in to view mixtapes.");
-        }
-      })
-      .catch((error) => console.log(error));
-  }, []);
-
-    // Initital fetch GET request to fetch mixtapes for user
+    // Fetch the logged-in user's ID from the backend (commented out)
+    /*
     useEffect(() => {
-        if (userId) {
-            fetch("http://localhost:5000/mixtapes")
-            .then( r => r.json() )
-            .then( mixtapeData => setMixtapes(mixtapeData))
-            .catch( error => console.log(error))
-        }
-    },[userId])
+        fetch("http://localhost:5000/current_user")  // Fetch the user_id from the session
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.user_id) {
+                    setUserId(data.user_id);
+                } else {
+                    alert("You must be logged in to view mixtapes.");
+                }
+            })
+            .catch((error) => console.log(error));
+    }, []);
+    */
 
+    // Fetch all mixtapes when the component mounts
+    useEffect(() => {
+        // if (userId) { // Commented out user check
+            fetch("http://localhost:5000/mixtapes")
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.mixtapes) {
+                        setMixtapes(data.mixtapes); // Ensure correct data structure
+                    } else {
+                        console.log("No mixtapes found.");
+                    }
+                })
+                .catch((error) => console.log("Error fetching mixtapes:", error));
+        // }
+    }, []); // Removed userId dependency
+
+    // Function to add a new mixtape to the state
     const addNewMixtape = (newMixtape) => {
-        setMixtapes( origMixtapes => [...origMixtapes, newMixtape])
+        setMixtapes((prevMixtapes) => [...prevMixtapes, newMixtape]);
     };
 
-    return(
+    console.log("Rendering Home component..."); // Debugging 
+
+    return (
         <div>
             <MixtapeDisplay mixtapes={mixtapes} />
-            <MixtapeContents />
-            <MixtapeForm addNewMixtape={addNewMixtape}/>
+            <MixtapeForm addNewMixtape={addNewMixtape} />
+            <h2>My Mixtapes: </h2>
         </div>
-    )
+    );
 }
