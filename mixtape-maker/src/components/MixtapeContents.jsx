@@ -24,7 +24,7 @@ export default function MixtapeContents(){
             const songsData = await songsResponse.json();
             
             if (songsResponse.ok) {
-                const songIds = songsData.mixtape_items.map(item => item.song_id);
+                const songIds = songsData.mixtape_items ? songsData.mixtape_items.map(item => item.song_id) : [];
                 // Fetch the song details
                 const songDetailsResponse = await fetch(`/songs`);
                 const allSongs = await songDetailsResponse.json();
