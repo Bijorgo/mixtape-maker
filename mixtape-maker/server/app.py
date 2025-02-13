@@ -208,6 +208,7 @@ def delete_mixtape(mixtape_id):
     if not mixtape:
         return jsonify({"error": "Mixtape not found."}), 404
     try:
+        MixtapeItem.query.filter_by(mixtape_id=mixtape_id).delete() # Deletes associated mixtape-items
         db.session.delete(mixtape)
         db.session.commit()
         return jsonify({"message": "Mixtape deleted successfully!"}), 200
