@@ -1,47 +1,46 @@
-import {useState} from "react";
+import { useState } from "react";
 
-function DeleteSong() {
-    const [songId, setSongId] = useState("");
+function DeleteSong({ songId, onDelete }) {
+  const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleDelete = async (event) => {
-        event.preventDefault();
+  const handleDelete = async (event) => {
+    event.preventDefault();
 
-        if (!songId) {
-            alert("Please enter a song ID to delete a song.");
-            return;
-        }
-        try {
-            const repsonse = await fetch(`http://localhost:5000/songs/${songId}`, {
-                method: "DELETE",
-            });
+    setIsDeleting(true);
 
-        const result = await response.json();
-    
-        if (response.ok) {
-            alert(result.message || "Song successfully deleted!");
-            setSongId("");
-        } else {
-            alert(result.error || "Error occurred while deleting song.");
-        }
-        } catch (error) {
-            alert("Failed to delete song.")
-            console.error(error);
-        }
-    };
+    try {
+      const response = await fetch(`http://localhost:5000/songs/${songId}`, {
+        method: "DELETE",
+      });
 
-    return (
-        <div>
-           <h1>Delete A Song</h1>
-           <form onSubmit={handleDelete}>
-                <div>
-                    <label htmlFor="songId">Enter ID of Song To Delete:</label>
-                    <input type="number" id="songId" value={songId} onChange={(e) => setSongId(e.target.value)}/>
-                </div>
-                <button type="submit">Delete Song</button>
-           </form>
-        </div>
-    )
+      const result = await response.json();
 
+      if (response.ok) {
+        // Call the parent's onDelete function to update the song list
+        onDelete(songId);
+        alert(result.message || "Song successfully deleted!");
+      } else {
+        alert(result.error || "Error occurred while deleting song.");
+      }
+    } catch (error) {
+      alert("Failed to delete song.");
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
     }
+  };
 
-    export default DeleteSong;
+  return (
+    <div className="mt-2 flex justify-end">
+      <button
+        onClick={handleDelete}
+        disabled={isDeleting}
+        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-300"
+      >
+        {isDeleting ? "Deleting..." : "Delete"}
+      </button>
+    </div>
+  );
+}
+
+export default DeleteSong;

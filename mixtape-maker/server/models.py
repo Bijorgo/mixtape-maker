@@ -35,7 +35,7 @@ class Mixtape(db.Model):
     title = db.Column(db.String, nullable=False)
     description = db.Column(db.String, default="")
     # Foreign key relates to user
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     # Relationships
     mix_items = db.relationship("MixtapeItem", back_populates="mixtapes")
     user = db.relationship("User", back_populates="mixtapes")
@@ -53,8 +53,8 @@ class MixtapeItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String, default="unlistened", nullable=False)
     # Forgeign Keys
-    mixtape_id = db.Column(db.Integer, db.ForeignKey('mixtapes.id'))
-    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'))
+    mixtape_id = db.Column(db.Integer, db.ForeignKey('mixtapes.id'), nullable=False)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
     # Relationships
     songs = db.relationship("Song", back_populates="mix_item")
     mixtapes = db.relationship("Mixtape", back_populates="mix_items")
@@ -62,5 +62,13 @@ class MixtapeItem(db.Model):
     serializer_rules = ('-mixtapes', '-songs') # im not 100% sure if this is what we want
 
     def to_dict(self):
-        return {"id": self.id, "status": self.status, "mixtape_id": self.mixtape_id, "song_id": self.song_id}
+        return {
+            "id": self.id,
+            "status": self.status,
+            "mixtape_id": self.mixtape_id,
+            "song_id": self.song_id,
+            "mixtape": self.mixtapes.to_dict() if self.mixtapes else None,
+            "song": self.songs.to_dict() if self.songs else None,
+        }
+
     
