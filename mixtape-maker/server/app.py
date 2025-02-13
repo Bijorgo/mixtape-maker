@@ -1,4 +1,4 @@
-from flask import request, jsonify, session
+from flask import request, jsonify, session, redirect, url_for
 from config import app, db
 from sqlalchemy.exc import IntegrityError
 from models import User, Song, Mixtape, MixtapeItem
@@ -26,6 +26,7 @@ def register_user():
         db.session.add(User(username=new_user["username"], password=new_user["password"]))
         db.session.commit()
         return jsonify({"message:": "User created!"}), 201
+    
     except IntegrityError:
         return jsonify({"error": "Username already exists, please try another one."})
     except Exception as exception:
@@ -37,14 +38,18 @@ def user_login():
     user_entry = request.json
     username = user_entry["username"]
     password = user_entry["password"]
+
     if not username or not password:
         return jsonify({"error": "Username and password are required for login."})
     user=User.query.filter_by(username=username).first()
+
     if not user or user.password != password:
         return jsonify({"error": "Inavalid username or password."}), 401
+    
     # Store user_id in session after log in
     session["user_id"] = user.id
-    return jsonify({"message": "You have successfully logged in!"}), 200
+
+    return redirect(url_for('get_user_mixtapes', user_id=user.id))
 
 # GET /users/:id : Retrieve a specific user's information. (Tested via Postman, 200 OK)
 @app.get("/users/<int:user_id>")
@@ -58,6 +63,9 @@ def get_user(user_id):
 def get_user_mixtapes(user_id):
     # Retrieve user_id from the session
     logged_in_user_id = session.get("user_id")
+
+    if logged_in_user_id is None:
+        return jsonify({"error": "You must be logged in to view mixtapes."}), 401
 
     if logged_in_user_id != user_id:
         return jsonify({"error": "You do not have permission to view this user's mixtapes."}), 403
