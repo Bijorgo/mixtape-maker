@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from models import User, Song, Mixtape, MixtapeItem
 from flask_cors import CORS
 
-CORS(app)
+CORS(app, supports_credentials=True)
 
 
 
@@ -58,6 +58,14 @@ def get_user(user_id):
     if not user:
         return jsonify({"error": "User not found."})
     return jsonify(user.to_dict()), 200
+
+@app.get('/current_user')
+def current_user():
+    user_id = session.get('user_id')
+    if user_id:
+        return jsonify({"user_id": user_id}), 200
+    else:
+        return jsonify({"error": "Not logged in"}), 401
 
 @app.get("/users/<int:user_id>/mixtapes")
 def get_user_mixtapes(user_id):
