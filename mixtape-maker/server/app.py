@@ -207,7 +207,7 @@ def delete_mixtape(mixtape_id):
 # MIXTAPEITEMS ROUTES
 
 @app.get("/mixtape-items")
-def get_mixtape_items():
+def get_mixtape_items_all():
     mixtape_items = MixtapeItem.query.all()
     if not mixtape_items:
         return jsonify({"error": "No mixtape items found."}), 404
@@ -222,7 +222,7 @@ def get_mixtape_items_for_mixtape(mixtape_id):
     return jsonify({"mixtape_items": [item.to_dict() for item in mixtape_items]}), 200
 
 @app.get("/mixtape-items")
-def get_mixtape_items():
+def get_all_mixtape_items():
     mixtape_id = request.args.get("mixtape_id")
     if not mixtape_id:
         return jsonify({"error": "Missing mixtape_id"}), 400
@@ -276,9 +276,19 @@ def update_mixtape_item(mixtape_item_id):
         return jsonify(mixtape_item.to_dict())
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
+    
+@app.get("/mixtape-items/mixtape/<int:mixtape_id>")
+def get_mixtape_items(mixtape_id):
+    mixtape_items = MixtapeItem.query.filter_by(mixtape_id=mixtape_id).all()
+    
+    if not mixtape_items:
+        return jsonify({"error": "No songs found in this mixtape."}), 404
+    
+    return jsonify([item.to_dict() for item in mixtape_items])
+
 
 @app.delete("/mixtape-items/<int:mixtape_item_id>")
-def delete_mixtape_item(mixtape_item_id):
+def delete_mixtape_items_by_mixtape(mixtape_item_id):
     mixtape_item = MixtapeItem.query.filter_by(id=mixtape_item_id).first()
     if not mixtape_item:
         return jsonify({"error": "Mixtape item not found."}), 404
