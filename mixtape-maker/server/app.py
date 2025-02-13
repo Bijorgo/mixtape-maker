@@ -2,6 +2,9 @@ from flask import request, jsonify
 from config import app, db
 from sqlalchemy.exc import IntegrityError
 from models import User, Song, Mixtape, MixtapeItem
+from flask_cors import CORS
+
+CORS(app)
 
 
 
