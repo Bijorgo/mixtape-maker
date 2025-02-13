@@ -49,10 +49,29 @@ export default function Home() {
     console.log("Rendering Home component..."); // Debugging 
 
     return (
-        <div>
-            <MixtapeDisplay mixtapes={mixtapes} />
-            <MixtapeForm addNewMixtape={addNewMixtape} />
-            <h2>My Mixtapes: </h2>
+        <div className="bg-gray-50 min-h-screen py-8 px-6 md:px-12">
+            <h1 className="text-4xl font-semibold text-center text-gray-800 mb-6">
+                Welcome to Your Mixtape Collection
+            </h1>
+
+            <div className="mb-6 text-center">
+                <MixtapeForm addNewMixtape={addNewMixtape} />
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">My Mixtapes:</h2>
+            
+            {/* Display mixtapes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mixtapes.map((mixtape) => (
+                    <div key={mixtape.id} className="bg-white shadow-lg rounded-lg p-4">
+                        <h3 className="text-xl font-semibold text-gray-800">{mixtape.title}</h3>
+                        <p className="text-sm text-gray-600">{mixtape.description || "No description available."}</p>
+                        <Link to={`/mixtapes/${mixtape.id}`} className="text-blue-500 hover:text-blue-700 mt-2 inline-block">
+                            View Mixtape Contents
+                        </Link>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
