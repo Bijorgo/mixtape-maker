@@ -1,22 +1,21 @@
-from flask import Flask, request, jsonify
-from server.config import app, db
+from flask import request, jsonify, session, redirect, url_for
+from config import app, db
 from sqlalchemy.exc import IntegrityError
 from models import User, Song, Mixtape, MixtapeItem
+from flask_cors import CORS
+# Note: I uesed AI to comment out all logic pertaining to log in and uder id
 
-
+CORS(app, supports_credentials=True)
 
 @app.get("/")
 def index():
     return jsonify({ "message": "Hello, world!" })
 
-
 # USER ROUTES
 
-# POST /register: Register a new user. (Tested using PostMan - 200)
 @app.post("/register")
 def register_user():
     new_user = request.json
-
     if not new_user["username"] or not new_user["password"]:
         return jsonify({"error": "Username and password are required fields."}), 400
     try:
@@ -28,45 +27,37 @@ def register_user():
     except Exception as exception:
         return jsonify({"error": str(exception)})
 
-# POST /login: Log in. (Created test user in DB and tested via Postman, 200 OK)
 @app.post("/login")
 def user_login():
     user_entry = request.json
     username = user_entry["username"]
     password = user_entry["password"]
+
     if not username or not password:
         return jsonify({"error": "Username and password are required for login."})
-    user=User.query.filter_by(username=username).first()
+    user = User.query.filter_by(username=username).first()
+
     if not user or user.password != password:
-        return jsonify({"error": "Inavalid username or password."}), 401
-    return jsonify({"message": "You have successfully logged in!"}), 200
+        return jsonify({"error": "Invalid username or password."}), 401
 
-# GET /users/:id : Retrieve a specific user's information. (Tested via Postman, 200 OK)
-@app.get("/users/<int:user_id>")
-def get_user(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    if not user:
-        return jsonify({"error": "User not found."})
-    return jsonify(user.to_dict()), 200
+    # Commented out the session management for login
+    # session["user_id"] = user.id
 
-#
-# 
-# 
-# 
-# 
+    # Removed redirect to mixtapes for user
+    return jsonify({"message": "Login successful!"})
+
+# Removed routes that check for user_id in session or use session to get logged-in user
+
 # SONG ROUTES
 
-# GET/songs: Get all songs (Tested via postman, 200 OK)
 @app.get("/songs")
 def get_songs():
     songs = Song.query.all()
     if not songs:
-        return jsonify({"error": "no songs found."}), 404
+        return jsonify({"error": "No songs found."}), 404
     song_list = [{"id": song.id, "name": song.name, "artist": song.artist, "album": song.album} for song in songs]
-
     return jsonify({"songs": song_list}), 200
 
-#POST/songs: Create a new song (tested via postman, 200 ok)
 @app.post("/songs")
 def create_new_song():
     new_song = request.json
@@ -79,8 +70,7 @@ def create_new_song():
         return jsonify(song.to_dict())
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
-    
-#PATCH/songs/id: Update a song (tested in Postman, 200 OK)
+
 @app.patch("/songs/<int:song_id>")
 def update_song(song_id):
     updated_song = request.json
@@ -103,8 +93,6 @@ def update_song(song_id):
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
-
-#DELETE/songs.id: Delete a song (Tested via Postman, 200 OK)
 @app.delete("/songs/<int:song_id>")
 def delete_song(song_id):
     song = Song.query.filter_by(id=song_id).first()
@@ -116,8 +104,7 @@ def delete_song(song_id):
         return jsonify({"message": "Song deleted successfully!"})
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
-    
-#GET/songs/search: Search for songs by attribute? (Tested via postman, 200 OK)
+
 @app.get("/songs/search")
 def search_songs():
     name = request.args.get("name")
@@ -135,52 +122,57 @@ def search_songs():
     songs = query.all()
     if not songs:
         return jsonify({"error": "Sorry, no songs found matching these specifications."})
-    song_data = [{"id": song.id, "name": song.name, "artist": song.artist, "album": song.album, "duration": song.duraton} for song in songs ]
+    song_data = [{"id": song.id, "name": song.name, "artist": song.artist, "album": song.album, "duration": song.duration} for song in songs]
     return jsonify({"songs": song_data}), 200
-    
-# 
-# 
-# 
-#
-#
+
 # MIXTAPE ROUTES
 
-# GET /mixtapes: Get all mixtapes
 @app.get("/mixtapes")
 def get_mixtapes():
-    mixtapes = Mixtape.query.all()
-    if not mixtapes:
-        return jsonify({"error": "No mixtapes found."}), 404
-    mixtape_list = [mixtape.to_dict() for mixtape in mixtapes]
-    return jsonify({"mixtapes": mixtape_list}), 200
+    # Commented out authentication check
+    # user_id = session.get("user_id")  
+    # if not user_id:
+    #     return jsonify({"error": "You must be logged in to view mixtapes."}), 401
+    try:
+        mixtapes = Mixtape.query.all()  # Fetch all mixtapes without checking for user_id
+        if not mixtapes:
+            return jsonify({"error": "No mixtapes found."}), 404
+        mixtape_list = [mixtape.to_dict() for mixtape in mixtapes]
+        return jsonify({"mixtapes": mixtape_list}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal server error handling
 
-# GET /mixtapes/:id: Retrieve a specific mixtape's information
 @app.get("/mixtapes/<int:mixtape_id>")
 def get_mixtape(mixtape_id):
+    # Removed authentication check
+    # user_id = session.get("user_id")  
+    # if not user_id:
+    #     return jsonify({"error": "You must be logged in to view mixtapes."}), 401
     mixtape = Mixtape.query.filter_by(id=mixtape_id).first()
     if not mixtape:
         return jsonify({"error": "Mixtape not found."}), 404
     return jsonify(mixtape.to_dict()), 200
 
-# POST /mixtapes: Create a new mixtape
 @app.post("/mixtapes")
 def create_mixtape():
-    new_mixtape = request.json
-    if not new_mixtape.get("title") or not new_mixtape.get("user_id"):
-        return jsonify({"error": "Title and user_id are required fields."}), 400
+    # Removed user_id check in session
+    title = request.json.get('title')
+
+    if not title:
+        return jsonify({"error": "Title is a required field."}), 400
+    
+    new_mixtape = Mixtape(
+        title=title,
+        description=request.json.get('description', "")
+    )
+    
     try:
-        mixtape = Mixtape(
-            title=new_mixtape["title"],
-            description=new_mixtape.get("description", ""),
-            user_id=new_mixtape["user_id"]
-        )
-        db.session.add(mixtape)
+        db.session.add(new_mixtape)
         db.session.commit()
-        return jsonify(mixtape.to_dict()), 201
+        return jsonify(new_mixtape.to_dict()), 201
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
-# PATCH /mixtapes/:id: Update a mixtape
 @app.patch("/mixtapes/<int:mixtape_id>")
 def update_mixtape(mixtape_id):
     updated_mixtape = request.json
@@ -192,8 +184,6 @@ def update_mixtape(mixtape_id):
         mixtape.title = updated_mixtape["title"]
     if "description" in updated_mixtape:
         mixtape.description = updated_mixtape["description"]
-    if "user_id" in updated_mixtape:
-        mixtape.user_id = updated_mixtape["user_id"]
 
     try:
         db.session.commit()
@@ -201,46 +191,64 @@ def update_mixtape(mixtape_id):
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
-# DELETE /mixtapes/:id: Delete a mixtape
 @app.delete("/mixtapes/<int:mixtape_id>")
 def delete_mixtape(mixtape_id):
     mixtape = Mixtape.query.filter_by(id=mixtape_id).first()
     if not mixtape:
         return jsonify({"error": "Mixtape not found."}), 404
     try:
-        MixtapeItem.query.filter_by(mixtape_id=mixtape_id).delete() # Deletes associated mixtape-items
+        MixtapeItem.query.filter_by(mixtape_id=mixtape_id).delete()  # Delete associated items
         db.session.delete(mixtape)
         db.session.commit()
         return jsonify({"message": "Mixtape deleted successfully!"}), 200
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
-#
-#
-#
-#
-#
 # MIXTAPEITEMS ROUTES
 
-# GET /mixtape-items: Get all mixtape items
 @app.get("/mixtape-items")
-def get_mixtape_items():
+def get_mixtape_items_all():
     mixtape_items = MixtapeItem.query.all()
     if not mixtape_items:
         return jsonify({"error": "No mixtape items found."}), 404
     mixtape_item_list = [mixtape_item.to_dict() for mixtape_item in mixtape_items]
     return jsonify({"mixtape_items": mixtape_item_list}), 200
 
-# POST /mixtape-items: Add a new song to a mixtape
+@app.get("/mixtape-items/<int:mixtape_id>")
+def get_mixtape_items_for_mixtape(mixtape_id):
+    mixtape_items = MixtapeItem.query.filter_by(mixtape_id=mixtape_id).all()
+    if not mixtape_items:
+        return jsonify({"mixtape_items": []})  # Return empty list instead of an error
+    return jsonify({"mixtape_items": [item.to_dict() for item in mixtape_items]}), 200
+
+@app.get("/mixtape-items")
+def get_all_mixtape_items():
+    mixtape_id = request.args.get("mixtape_id")
+    if not mixtape_id:
+        return jsonify({"error": "Missing mixtape_id"}), 400
+
+    items = MixtapeItem.query.filter_by(mixtape_id=mixtape_id).all()
+    return jsonify([item.to_dict() for item in items])
+
+
+
 @app.post("/mixtape-items")
 def create_mixtape_item():
     new_item = request.json
-    if not new_item.get("mixtape_id") or not new_item.get("song_id"):
+    mixtape_id = new_item.get("mixtape_id")
+    song_id = new_item.get("song_id")
+    
+    if not mixtape_id or not song_id:
         return jsonify({"error": "Mixtape ID and Song ID are required fields."}), 400
+    
+    mixtape = Mixtape.query.filter_by(id=mixtape_id).first()
+    if not mixtape:
+        return jsonify({"error": "Mixtape not found."}), 404
+
     try:
         mixtape_item = MixtapeItem(
-            mixtape_id=new_item["mixtape_id"],
-            song_id=new_item["song_id"],
+            mixtape_id=mixtape_id,
+            song_id=song_id,
             status=new_item.get("status", "unlistened")
         )
         db.session.add(mixtape_item)
@@ -249,7 +257,6 @@ def create_mixtape_item():
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
-# PATCH /mixtape-items/:id: Update a mixtape item
 @app.patch("/mixtape-items/<int:mixtape_item_id>")
 def update_mixtape_item(mixtape_item_id):
     updated_item = request.json
@@ -269,10 +276,19 @@ def update_mixtape_item(mixtape_item_id):
         return jsonify(mixtape_item.to_dict())
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
+    
+@app.get("/mixtape-items/mixtape/<int:mixtape_id>")
+def get_mixtape_items(mixtape_id):
+    mixtape_items = MixtapeItem.query.filter_by(mixtape_id=mixtape_id).all()
+    
+    if not mixtape_items:
+        return jsonify({"error": "No songs found in this mixtape."}), 404
+    
+    return jsonify([item.to_dict() for item in mixtape_items])
 
-# DELETE /mixtape-items/:id: Delete a mixtape item
+
 @app.delete("/mixtape-items/<int:mixtape_item_id>")
-def delete_mixtape_item(mixtape_item_id):
+def delete_mixtape_items_by_mixtape(mixtape_item_id):
     mixtape_item = MixtapeItem.query.filter_by(id=mixtape_item_id).first()
     if not mixtape_item:
         return jsonify({"error": "Mixtape item not found."}), 404
@@ -282,10 +298,6 @@ def delete_mixtape_item(mixtape_item_id):
         return jsonify({"message": "Mixtape item deleted successfully!"}), 200
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
-
-
-    
-
 
 if __name__ == "__main__":
     app.run(debug=True)
