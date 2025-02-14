@@ -28,6 +28,7 @@ function SongList() {
     setSongs(songs.filter((song) => song.id !== songId)); // Remove deleted song from the state
   };
 
+  //Add UpdateSong functionality here
   return (
     <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-lg space-y-6">
       <h1 className="text-3xl font-semibold text-center text-gray-800">
@@ -45,8 +46,6 @@ function SongList() {
               </div>
               <div className="text-sm text-gray-400">{song.album}</div>
             </div>
-
-            {/* Use the DeleteSong component for each song */}
             <DeleteSong songId={song.id} onDelete={handleDelete} />
           </li>
         ))}
