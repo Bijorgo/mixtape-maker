@@ -62,22 +62,30 @@ def get_songs():
 def create_new_song():
     try:
         new_song = request.json
-        if "name" not in new_song or "artist" not in new_song or "mixtape_id" not in new_song:
+        if "name" not in new_song or "artist" not in new_song:
             return jsonify({"error": "Name, artist and mixtape ID fields are required."})
         name = new_song["name"]
         artist = new_song["artist"]
-        mixtape_id = new_song["mixtape_id"]
+        mixtape_id = new_song.get("mixtape_id")
 
-        mixtape = Mixtape.query.get(mixtape_id)
-        if mixtape is None:
-            return jsonify({"error": "Mixtape not found"}), 404
-        song = Song(name=name, artist=artist, album=new_song["album"] if "album" in new_song else "", duration=new_song["duration"] if "duration" in new_song else "", mixtape_id=mixtape_id)
+        if mixtape_id:
+            mixtape = Mixtape.query.get(mixtape_id)
+            if mixtape is None:
+                return jsonify({"error": " Mixtape not found."}), 404
+            
+        song = Song(name=name, artist=artist, album=new_song.get("album", ""), duration=new_song.get("duration"))
         db.session.add(song)
         db.session.commit()
+
+        if mixtape_id:
+            mixtape_item = MixtapeItem(mixtape_id=mixtape_id, song_id=song.id)
+            db.session.add(mixtape_item)
+            db.session.commit()
+
         return jsonify(song.to_dict()), 201
-    
     except Exception as exception:
-        return jsonify({"error": str(exception)}), 500
+        return jsonify({"error": str(exception)}, 500)
+
 
 @app.patch("/songs/<int:song_id>")
 def update_song(song_id):
