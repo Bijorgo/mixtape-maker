@@ -83,7 +83,7 @@ function SongForm({mixtapeId}) {
             Duration in seconds:
           </label>
           <input
-            type="text"
+            type="number"
             id="duration"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
