@@ -60,14 +60,22 @@ def get_songs():
 
 @app.post("/songs")
 def create_new_song():
-    new_song = request.json
-    if not new_song["name"] or not new_song["artist"]:
-        return jsonify({"error": "Name and artist fields are required"}), 400
     try:
-        song = Song(name=new_song["name"], artist=new_song["artist"], album=new_song.get("album"), duration=new_song.get("duration"))
+        new_song = request.json
+        if "name" not in new_song or "artist" not in new_song or "mixtape_id" not in new_song:
+            return jsonify({"error": "Name, artist and mixtape ID fields are required."})
+        name = new_song["name"]
+        artist = new_song["artist"]
+        mixtape_id = new_song["mixtape_id"]
+
+        mixtape = Mixtape.query.get(mixtape_id)
+        if mixtape is None:
+            return jsonify({"error": "Mixtape not found"}), 404
+        song = Song(name=name, artist=artist, album=new_song["album"] if "album" in new_song else "", duration=new_song["duration"] if "duration" in new_song else "", mixtape_id=mixtape_id)
         db.session.add(song)
         db.session.commit()
-        return jsonify(song.to_dict())
+        return jsonify(song.to_dict()), 201
+    
     except Exception as exception:
         return jsonify({"error": str(exception)}), 500
 
