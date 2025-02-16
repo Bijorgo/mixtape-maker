@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function SongForm() {
+function SongForm({mixtapeId}) {
   const [name, setName] = useState("");
   const [artist, setArtist] = useState("");
   const [album, setAlbum] = useState("");
@@ -13,7 +13,7 @@ function SongForm() {
       return;
     }
 
-    const songData = { name, artist, album, duration };
+    const songData = { name, artist, album, duration, mixtape_id: mixtapeId };
 
     try {
       const response = await fetch("http://localhost:5000/songs", {
