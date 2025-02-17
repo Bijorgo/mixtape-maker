@@ -13,6 +13,12 @@ function SongForm({mixtapeId}) {
       return;
     }
 
+    if (!duration || Number(duration) <= 0) {
+      alert("Duration must be a number greater than zero.")
+      return;
+    }
+      
+
     const songData = { name, artist, album, duration, mixtape_id: mixtapeId };
 
     try {

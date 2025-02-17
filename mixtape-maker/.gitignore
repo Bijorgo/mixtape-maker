@@ -11,6 +11,7 @@ lerna-debug.log*
 server/migrations/versions/
 server/instance/music_app.db
 
+
 node_modules
 dist
 dist-ssr
@@ -26,3 +27,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
