@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StatusToggle from "./StatusToggle"; // Import the StatusToggle component
+import MixtapeEdit from "./MixtapeEdit"; // Import MixtapeEdit component
 
 export default function MixtapeContents() {
     const navigate = useNavigate();
@@ -51,6 +52,27 @@ export default function MixtapeContents() {
         }
     };
 
+    // Function to update the mixtape details
+    const updateMixtape = async (updatedData) => {
+        try {
+            const response = await fetch(`http://localhost:5000/mixtapes/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!response.ok) throw new Error("Failed to update mixtape");
+
+            setMessage("Mixtape updated successfully!");
+            setMessageType("success");
+
+            fetchMixtapeDetails(); // Refresh the data
+        } catch (error) {
+            setMessage(error.message);
+            setMessageType("error");
+        }
+    };
+
     const deleteSongFromMixtape = async (mixtapeItemId) => {
         try {
             const response = await fetch(`http://localhost:5000/mixtape-items/${mixtapeItemId}`, {
@@ -61,7 +83,7 @@ export default function MixtapeContents() {
             setMessage("Song removed from mixtape successfully!");
             setMessageType("success");
 
-            fetchMixtapeDetails(); // Refresh UI
+            fetchMixtapeDetails(); // Refresh 
         } catch (error) {
             setMessage(error.message);
             setMessageType("error");
@@ -94,6 +116,14 @@ export default function MixtapeContents() {
             <div className="bg-white p-6 rounded-lg shadow-lg space-y-6">
                 <h1 className="text-3xl font-semibold text-gray-800">{mixtape.title}</h1>
                 <p className="text-lg text-gray-600">{mixtape.description}</p>
+                {mixtape && (
+                    <MixtapeEdit 
+                        title={mixtape.title} 
+                        description={mixtape.description} 
+                        onUpdateMixtape={updateMixtape} 
+                    />
+                )}
+
                 <button
                     onClick={deleteMixtape}
                     className="w-full bg-red-500 text-white py-2 rounded-lg mt-4 hover:bg-red-600"
