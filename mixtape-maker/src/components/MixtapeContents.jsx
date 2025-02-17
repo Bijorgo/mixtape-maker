@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StatusToggle from "./StatusToggle"; // Import the StatusToggle component
+import SongForm from "./SongForm"
 import MixtapeEdit from "./MixtapeEdit"; // Import MixtapeEdit component
 
 export default function MixtapeContents() {
@@ -172,6 +173,8 @@ export default function MixtapeContents() {
                         <p className="text-gray-500">No songs found in this mixtape.</p>
                     )}
                 </ul>
+                <h3 className="text-xl font-semibold text-gray-800">Add A New Song To This Mixtape:</h3>
+                <SongForm mixtapeId={mixtape.id} />
             </div>
         </div>
     );
