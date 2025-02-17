@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-from flask import Flask, request, jsonify
-from server.config import app, db
-=======
 from flask import request, jsonify, session, redirect, url_for
 from config import app, db
->>>>>>> fad47931ce1a2a091b9e7969ba9ed03451106504
 from sqlalchemy.exc import IntegrityError
 from models import User, Song, Mixtape, MixtapeItem
 from flask_cors import CORS
