@@ -9,7 +9,8 @@ lerna-debug.log*
 **/__pycache__/
 **/*.pyc
 server/migrations/versions/
-mixtape-maker/server/instance/music_app.db
+server/instance/music_app.db
+
 
 node_modules
 dist
