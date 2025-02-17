@@ -1,4 +1,5 @@
 from config import db, SerializerMixin, association_proxy
+from sqlalchemy.orm import validates #python / app level validations
 
 
 class User(db.Model):
@@ -41,6 +42,19 @@ class Mixtape(db.Model):
     user = db.relationship("User", back_populates="mixtapes")
     # Serializer rules
     serializer_rules = ('mix_item', 'user', '-mix_item.mixtapes', '-user.mixtapes')
+
+    # validations
+    @validates("title")
+    def validate_name(self, key, value):
+        if not type(value) == str:
+            raise TypeError("Title must be a string.")
+        return value
+    
+    @validates("description")
+    def validate_name(self, key, value):
+        if value is not None and not isinstance(value, str):  # Allow None but enforce string
+            raise TypeError("Description must be a string.")
+        return value
 
     def to_dict(self):
         return {"id": self.id, "title": self.title, "description": self.description, "user_id": self.user_id}
