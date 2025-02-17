@@ -9,6 +9,7 @@ lerna-debug.log*
 **/__pycache__/
 **/*.pyc
 server/migrations/versions/
+server/instance/music_app.db
 
 node_modules
 dist
