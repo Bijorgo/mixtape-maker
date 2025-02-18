@@ -11,9 +11,9 @@ export default function MixtapeForm({ addNewMixtape }) {
     // Prevent default form submit behavior
     event.preventDefault();
 
-    // Form validation: title is required, description is optional
-    if (!title) {
-      setError("Please fill out the title field.");
+    // Form validation: title is required, description is optional, title must be a string
+    if (typeof title !== "string" || title.trim() === "") {
+      setError("Title must be a valid string!");
       return; // Prevents form submission if title is missing
     }
 
