@@ -1,9 +1,10 @@
 import { useState } from "react"; 
 
 export default function StatusToggle({ mixtapeItemId, currentStatus }) {
-    const [status, setStatus] = useState(currentStatus);
+    const [status, setStatus] = useState(currentStatus); // Statuses are listened or unlistened 
 
     async function toggleStatus() {
+        // Ternary operator to toggle based on initial state
         const newStatus = status === "unlistened" ? "listened" : "unlistened";
         setStatus(newStatus);
 

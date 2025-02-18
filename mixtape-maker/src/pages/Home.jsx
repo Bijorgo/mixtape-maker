@@ -7,6 +7,14 @@ import { Link } from "react-router";
 export default function Home() {
     // State to store mixtapes
     const [mixtapes, setMixtapes] = useState([]);
+
+    // Logic for user log in / authentication has been commented out
+    // It is currently not operable and it stands in the way of functionality of
+    // the rest of the application. It has not been deleted yet so that we have
+    // the oportunity to implement and fix it later. The break lies in using session
+    // to keep the user logged in, as well as making the connection from user to
+    // mixtapes in the database.
+
     // const [userId, setUserId] = useState(null); // Store the logged-in user's ID
 
     // Fetch the logged-in user's ID from the backend (commented out)
@@ -60,7 +68,7 @@ export default function Home() {
 
             <h2 className="text-2xl font-bold text-gray-700 mb-4">My Mixtapes:</h2>
             
-            {/* Display mixtapes */}
+            {/* Display all mixtapes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {mixtapes.map((mixtape) => (
                     <div key={mixtape.id} className="bg-white shadow-lg rounded-lg p-4">
