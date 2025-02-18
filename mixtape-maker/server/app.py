@@ -5,6 +5,13 @@ from models import User, Song, Mixtape, MixtapeItem
 from flask_cors import CORS
 # Note: I uesed AI to comment out all logic pertaining to log in and uder id
 
+# Logic for user log in / authentication has been commented out
+# It is currently not operable and it stands in the way of functionality of
+# the rest of the application. It has not been deleted yet so that we have
+# the oportunity to implement and fix it later. The break lies in using session
+# to keep the user logged in, as well as making the connection from user to
+# mixtapes in the database.
+
 CORS(app, supports_credentials=True)
 
 @app.get("/")
