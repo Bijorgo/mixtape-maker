@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import StatusToggle from "./StatusToggle"; // Import the StatusToggle component
-import SongForm from "./SongForm"
+import SongForm from "./SongForm" // Handles add song to mixtape (create mixtape item)
 import MixtapeEdit from "./MixtapeEdit"; // Import MixtapeEdit component
 
 export default function MixtapeContents() {
@@ -10,7 +10,7 @@ export default function MixtapeContents() {
     const [mixtape, setMixtape] = useState(null);
     const [mixtapeItems, setMixtapeItems] = useState([]); // Store mixtape items
     const [songs, setSongs] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // Help debug, gives users a visual that something is happening-takes a little to actually load
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState("");
 
@@ -20,11 +20,12 @@ export default function MixtapeContents() {
 
     const fetchMixtapeDetails = async () => {
         try {
-            console.log("Fetching mixtape with ID:", id);
+            console.log("Fetching mixtape with ID:", id); // Debug
 
+            // Fetch individual mixtape by id
             const mixtapeResponse = await fetch(`http://localhost:5000/mixtapes/${id}`);
             const mixtapeData = await mixtapeResponse.json();
-            if (!mixtapeResponse.ok) throw new Error(`Failed to fetch mixtape: ${mixtapeData.error}`);
+            if (!mixtapeResponse.ok) throw new Error(`Failed to fetch mixtape: ${mixtapeData.error}`); // throw new Error stops the application from attempting more functions
             setMixtape(mixtapeData);
 
             // Fetch mixtape items (contains song_id and status)
@@ -111,7 +112,7 @@ export default function MixtapeContents() {
     if (!mixtape || Object.keys(mixtape).length === 0) {
         return <div className="text-center text-xl text-red-600">Mixtape not found.</div>;
     }
-
+    // Styled with TailwindCSS
     return (
         <div className="container mx-auto p-6 space-y-8">
             <div className="bg-white p-6 rounded-lg shadow-lg space-y-6">

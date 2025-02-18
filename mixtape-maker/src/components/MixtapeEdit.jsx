@@ -1,9 +1,10 @@
 import { useState } from "react";
 
 export default function MixtapeEdit({ title: initialTitle = "", description: initialDescription = "", onUpdateMixtape }) {
+    // Set defaults of title and description as empty string to prevent premature error
     const [title, setTitle] = useState(initialTitle);
     const [description, setDescription] = useState(initialDescription);
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState(""); // User sees message for feedback on actions
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -14,7 +15,7 @@ export default function MixtapeEdit({ title: initialTitle = "", description: ini
             setMessage("Failed to update mixtape.");
         }
     };
-
+    // Update form has title and description pre populated so you can edit rather that replace
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>

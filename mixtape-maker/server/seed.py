@@ -5,6 +5,11 @@ import random
 
 fake = Faker()
 
+# For the future, consider replacing fake data here with a seed file that
+# seeds the same things every time it is run. We're running into merge
+# conflicts due to this seeding, but it would still be useful for the 
+# user of the app to have data already in the db
+
 # See Users
 def seed_users(num=10):
     users = []
